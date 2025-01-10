@@ -79,33 +79,24 @@ void MainWindow::checkConfig()
 
 QString getPing(const QString &serverAddress) {
     QProcess process;
-    qDebug() << "Pinging.." << serverAddress;
-
-    // Start timer
-    QElapsedTimer timer;
-    timer.start();
 
     #ifdef Q_OS_WIN
-        process.start("ping", QStringList() << "-n" << "1" << serverAddress); // Windows
+        process.start("ping", QStringList() << "-n" << "1" << serverAddress);
     #else
-        process.start("ping", QStringList() << "-c" << "1" << serverAddress); // Linux/macOS
+        process.start("ping", QStringList() << "-c" << "1" << serverAddress);
     #endif
 
-    // Wait for the process to finish
-    if (!process.waitForFinished(5000)) { // 5-second timeout
-        qDebug() << "Ping timed out!";
+    if (!process.waitForFinished(5000)) {
         return "Timeout";
     }
 
-    // Stop timer
-    qint64 elapsed = timer.elapsed();
-
-    // Get output and debug the result
     QString output = process.readAllStandardOutput();
-    qDebug() << "Ping Output:" << output;
-
-    // Return the elapsed time as a string
-    return QString::number(elapsed) + " ms";
+    QRegularExpression regex(R"(time[=<]\s*(\d+\.?\d*)\s*ms)");
+    QRegularExpressionMatch match = regex.match(output);
+    if (match.hasMatch()) {
+        return match.captured(1) + " ms";
+    }
+    return "N/A";
 }
 
 void MainWindow::fetchServers()
@@ -185,6 +176,7 @@ void MainWindow::fetchServers()
                     ui->serverListTable->setItem(row, 3, new QTableWidgetItem(serverCountry));
                     ui->serverListTable->setItem(row, 4, new QTableWidgetItem(serverIP));
                     ui->serverListTable->setItem(row, 5, new QTableWidgetItem(QString::number(portQuery)));
+                    // ui->serverListTable->setItem(row, 6, new QTableWidgetItem(getPing(serverIP)));
 
                     row++;
                 }
@@ -210,19 +202,17 @@ void MainWindow::setupTable()
     ui->serverListTable->setHorizontalHeaderLabels(headers);
     ui->serverListTable->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
     ui->serverListTable->setSortingEnabled(true);
-    ui->serverListTable->setAlternatingRowColors(true);
     ui->serverListTable->setShowGrid(false);
-    ui->serverListTable->verticalHeader()->setVisible(false);
     ui->serverListTable->horizontalHeader()->setVisible(true);
 
     // Adjust individual column widths
-    ui->serverListTable->setColumnWidth(0, 250); // Name
-    ui->serverListTable->setColumnWidth(1, 200); // Map
-    ui->serverListTable->setColumnWidth(2, 100); // Players
-    ui->serverListTable->setColumnWidth(3, 150); // Country
-    ui->serverListTable->setColumnWidth(4, 150); // IP
-    ui->serverListTable->setColumnWidth(5, 100); // Port
-    ui->serverListTable->setColumnWidth(6, 100); // Ping
+    ui->serverListTable->setColumnWidth(0, 350); // Name: Largest column, as it typically holds the most text
+    ui->serverListTable->setColumnWidth(1, 200); // Map: Moderate width for map names
+    ui->serverListTable->setColumnWidth(2, 100); // Players: Smaller width for player counts
+    ui->serverListTable->setColumnWidth(3, 150); // Country: Moderate width for country names
+    ui->serverListTable->setColumnWidth(4, 200); // IP: Moderate width for IP addresses
+    ui->serverListTable->setColumnWidth(5, 100); // Port: Small width for port numbers
+    ui->serverListTable->setColumnWidth(6, 50); // Ping: Small width for ping times
 
     // Ensure columns stretch to fill any remaining space
     ui->serverListTable->horizontalHeader()->setStretchLastSection(true);
