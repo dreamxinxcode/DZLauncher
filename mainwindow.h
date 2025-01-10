@@ -21,5 +21,8 @@ private:
     Ui::MainWindow *ui;
 
     void setupTable();
+    QString getConfig(const QString &key);
+    void checkConfig();
+    void fetchServers();
 };
 #endif // MAINWINDOW_H
