@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1648</width>
-    <height>1153</height>
+    <width>1500</width>
+    <height>1000</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,11 +17,88 @@
    <widget class="QTableWidget" name="serverListTable">
     <property name="geometry">
      <rect>
-      <x>5</x>
-      <y>210</y>
-      <width>1631</width>
-      <height>881</height>
+      <x>10</x>
+      <y>10</y>
+      <width>1251</width>
+      <height>941</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="serverNameSearch">
+    <property name="geometry">
+     <rect>
+      <x>1280</x>
+      <y>190</y>
+      <width>200</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="inputMask">
+     <string/>
+    </property>
+    <property name="placeholderText">
+     <string>Search here</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="filterResetBtn">
+    <property name="geometry">
+     <rect>
+      <x>1280</x>
+      <y>510</y>
+      <width>200</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Reset</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="onlineCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>1280</x>
+      <y>260</y>
+      <width>201</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Online</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="moddedOnlyCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>1280</x>
+      <y>230</y>
+      <width>201</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Modded</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="logoLabel">
+    <property name="geometry">
+     <rect>
+      <x>1280</x>
+      <y>10</y>
+      <width>201</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap resource="resources.qrc">:/images/logo.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>
@@ -30,13 +107,15 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1648</width>
+     <width>1500</width>
      <height>20</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

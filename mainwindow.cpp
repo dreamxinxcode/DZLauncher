@@ -19,6 +19,9 @@
 #include <QDebug>
 #include <QDir>
 #include <QJsonArray>
+#include <QPixmap>
+#include <QProcess>
+#include <QElapsedTimer>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -26,10 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // Set up a layout for the central widget
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->addWidget(ui->serverListTable);
-    centralWidget()->setLayout(layout);
+    this->setFixedSize(1500, 1000);
 
     setupTable();
 }
@@ -77,6 +77,37 @@ void MainWindow::checkConfig()
     }
 }
 
+QString getPing(const QString &serverAddress) {
+    QProcess process;
+    qDebug() << "Pinging.." << serverAddress;
+
+    // Start timer
+    QElapsedTimer timer;
+    timer.start();
+
+    #ifdef Q_OS_WIN
+        process.start("ping", QStringList() << "-n" << "1" << serverAddress); // Windows
+    #else
+        process.start("ping", QStringList() << "-c" << "1" << serverAddress); // Linux/macOS
+    #endif
+
+    // Wait for the process to finish
+    if (!process.waitForFinished(5000)) { // 5-second timeout
+        qDebug() << "Ping timed out!";
+        return "Timeout";
+    }
+
+    // Stop timer
+    qint64 elapsed = timer.elapsed();
+
+    // Get output and debug the result
+    QString output = process.readAllStandardOutput();
+    qDebug() << "Ping Output:" << output;
+
+    // Return the elapsed time as a string
+    return QString::number(elapsed) + " ms";
+}
+
 void MainWindow::fetchServers()
 {
     // Get the token
@@ -107,7 +138,6 @@ void MainWindow::fetchServers()
         if (reply->error() == QNetworkReply::NoError) {
             // Read the response
             QByteArray response = reply->readAll();
-            qDebug() << "Response: " << response;
 
             // Parse JSON
             QJsonDocument jsonDoc = QJsonDocument::fromJson(response);
@@ -130,7 +160,6 @@ void MainWindow::fetchServers()
                     if (!serverValue.isObject()) continue;
 
                     QJsonObject serverObject = serverValue.toObject();
-
                     QJsonObject serverDetails = serverObject.value("attributes").toObject().value("details").toObject();
 
                     // Extract server details
@@ -144,10 +173,12 @@ void MainWindow::fetchServers()
                     int port = serverObject.value("attributes").toObject().value("port").toInt();
                     int portQuery = serverObject.value("attributes").toObject().value("portQuery").toInt();
 
+                    // QString serverPing = getPing(serverIP);
+
                     // Add a new row to the table
                     ui->serverListTable->insertRow(row);
 
-                    // Populate the cells
+                    // Populate the table
                     ui->serverListTable->setItem(row, 0, new QTableWidgetItem(serverName));
                     ui->serverListTable->setItem(row, 1, new QTableWidgetItem(serverMap));
                     ui->serverListTable->setItem(row, 2, new QTableWidgetItem(QString("%1/%2").arg(players).arg(maxPlayers)));
@@ -155,7 +186,7 @@ void MainWindow::fetchServers()
                     ui->serverListTable->setItem(row, 4, new QTableWidgetItem(serverIP));
                     ui->serverListTable->setItem(row, 5, new QTableWidgetItem(QString::number(portQuery)));
 
-                    row++; // Move to the next row
+                    row++;
                 }
             }
         } else {
@@ -167,24 +198,32 @@ void MainWindow::fetchServers()
     });
 }
 
-
-void MainWindow::setupTable() \
+void MainWindow::setupTable()
 {
     fetchServers();
 
-    ui->serverListTable->setRowCount(100);
     ui->serverListTable->setColumnCount(7);
 
     // Set column headers
     QStringList headers;
     headers << "Name" << "Map" << "Players" << "Country" << "IP" << "Port" << "Ping";
     ui->serverListTable->setHorizontalHeaderLabels(headers);
+    ui->serverListTable->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
+    ui->serverListTable->setSortingEnabled(true);
+    ui->serverListTable->setAlternatingRowColors(true);
+    ui->serverListTable->setShowGrid(false);
+    ui->serverListTable->verticalHeader()->setVisible(false);
+    ui->serverListTable->horizontalHeader()->setVisible(true);
 
+    // Adjust individual column widths
+    ui->serverListTable->setColumnWidth(0, 250); // Name
+    ui->serverListTable->setColumnWidth(1, 200); // Map
+    ui->serverListTable->setColumnWidth(2, 100); // Players
+    ui->serverListTable->setColumnWidth(3, 150); // Country
+    ui->serverListTable->setColumnWidth(4, 150); // IP
+    ui->serverListTable->setColumnWidth(5, 100); // Port
+    ui->serverListTable->setColumnWidth(6, 100); // Ping
 
-    // Stretch the columns to fill the table's width
-    ui->serverListTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-
-    // Optional: Make the table fill its parent widget
-    ui->serverListTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    // Ensure columns stretch to fill any remaining space
+    ui->serverListTable->horizontalHeader()->setStretchLastSection(true);
 }
-

@@ -40,6 +40,7 @@ else()
         add_executable(DZLauncher
             ${PROJECT_SOURCES}
             config.json
+            resources.qrc
         )
     endif()
 endif()
