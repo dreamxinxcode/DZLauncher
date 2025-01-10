@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include <QVBoxLayout>
+#include <QHeaderView>
 
 // Network
 #include <QNetworkAccessManager>
@@ -23,6 +25,12 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // Set up a layout for the central widget
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->addWidget(ui->serverListTable);
+    centralWidget()->setLayout(layout);
+
     setupTable();
 }
 
@@ -123,7 +131,7 @@ void MainWindow::fetchServers()
 
                     QJsonObject serverObject = serverValue.toObject();
 
-                    QJsonObject serverDetails = serverObject.value("details").toObject();
+                    QJsonObject serverDetails = serverObject.value("attributes").toObject().value("details").toObject();
 
                     // Extract server details
                     QString serverName = serverObject.value("attributes").toObject().value("name").toString();
@@ -164,12 +172,19 @@ void MainWindow::setupTable() \
 {
     fetchServers();
 
-    ui->serverListTable->setRowCount(4);
+    ui->serverListTable->setRowCount(100);
     ui->serverListTable->setColumnCount(7);
 
     // Set column headers
     QStringList headers;
     headers << "Name" << "Map" << "Players" << "Country" << "IP" << "Port" << "Ping";
     ui->serverListTable->setHorizontalHeaderLabels(headers);
+
+
+    // Stretch the columns to fill the table's width
+    ui->serverListTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+    // Optional: Make the table fill its parent widget
+    ui->serverListTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
