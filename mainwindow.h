@@ -21,6 +21,7 @@ private:
     Ui::MainWindow *ui;
 
     void setupTable();
+    void onRowClicked(int row, int column);
     QString getConfig(const QString &key);
     void checkConfig();
     void fetchServers();

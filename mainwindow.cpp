@@ -29,6 +29,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    connect(ui->serverListTable, &QTableWidget::cellClicked, this, &MainWindow::onRowClicked);
+
     this->setFixedSize(1500, 1000);
 
     setupTable();
@@ -224,4 +226,54 @@ void MainWindow::setupTable()
 
     // Ensure columns stretch to fill any remaining space
     ui->serverListTable->horizontalHeader()->setStretchLastSection(true);
+}
+
+void MainWindow::onRowClicked(int row, int column)
+{
+    Q_UNUSED(column); // Ignore the column for this use case
+
+    QColor highlightColor("#318fca"); // Yellow (hex)
+    QColor defaultColor("#22243a");   // White (hex)
+
+    // Highlight the clicked row
+    for (int i = 0; i < ui->serverListTable->rowCount(); ++i) {
+        if (i == row) {
+            for (int j = 0; j < ui->serverListTable->columnCount(); ++j) {
+                QTableWidgetItem *item = ui->serverListTable->item(i, j);
+                if (item) {
+                    item->setBackground(highlightColor); // Highlight the row
+                }
+            }
+        } else {
+            for (int j = 0; j < ui->serverListTable->columnCount(); ++j) {
+                QTableWidgetItem *item = ui->serverListTable->item(i, j);
+                if (item) {
+                    item->setBackground(defaultColor); // Reset the background color
+                }
+            }
+        }
+    }
+
+    // Print the server details to the console
+    QString serverName = ui->serverListTable->item(row, 0)->text();
+    QString serverMap = ui->serverListTable->item(row, 1)->text();
+    QString serverPlayers = ui->serverListTable->item(row, 2)->text();
+    QString serverCountry = static_cast<QLabel*>(ui->serverListTable->cellWidget(row, 3))->text();
+    QString serverIP = ui->serverListTable->item(row, 4)->text();
+    QString serverPort = ui->serverListTable->item(row, 5)->text();
+
+    qDebug() << "Server Details:"
+             << "\nName: " << serverName
+             << "\nMap: " << serverMap
+             << "\nPlayers: " << serverPlayers
+             << "\nCountry: " << serverCountry
+             << "\nIP: " << serverIP
+             << "\nPort: " << serverPort;
+
+    ui->label_server_name->setText(serverName);
+    ui->label_server_map->setText(serverMap);
+    ui->label_server_players->setText(serverPlayers);
+    ui->label_server_country->setText(serverCountry);
+    ui->label_server_port->setText(serverPort);
+    ui->label_server_ip->setText(serverIP);
 }

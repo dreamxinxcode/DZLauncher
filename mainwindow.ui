@@ -37,17 +37,10 @@ QCheckBox::indicator:unchecked {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QTableHeader::section{ 
-	color:red;
-}
-
-QTableWidget {
+     <string notr="true">QTableWidget {
 	color: #747db0;
 }
-
-QTableWidgetItem {
-color:red;
-}</string>
+</string>
     </property>
     <property name="frameShape">
      <enum>QFrame::NoFrame</enum>
@@ -362,6 +355,150 @@ QLineEdit:focus {
     </property>
     <property name="text">
      <string>Night</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_server_name">
+    <property name="geometry">
+     <rect>
+      <x>1280</x>
+      <y>470</y>
+      <width>201</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #747db0;</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_server_ip">
+    <property name="geometry">
+     <rect>
+      <x>1280</x>
+      <y>510</y>
+      <width>201</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #747db0;</string>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_server_map">
+    <property name="geometry">
+     <rect>
+      <x>1280</x>
+      <y>540</y>
+      <width>201</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #747db0;</string>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_server_ip_2">
+    <property name="geometry">
+     <rect>
+      <x>1280</x>
+      <y>570</y>
+      <width>201</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #747db0;</string>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_server_port">
+    <property name="geometry">
+     <rect>
+      <x>1280</x>
+      <y>600</y>
+      <width>201</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #747db0;</string>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_server_players">
+    <property name="geometry">
+     <rect>
+      <x>1280</x>
+      <y>630</y>
+      <width>201</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #747db0;</string>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QTextBrowser" name="textBrowser">
+    <property name="geometry">
+     <rect>
+      <x>1280</x>
+      <y>760</y>
+      <width>201</width>
+      <height>192</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QTextBrowser {
+	color: #c3d1f9;
+	border-color: #c3d1f9;
+}</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_mods">
+    <property name="geometry">
+     <rect>
+      <x>1280</x>
+      <y>740</y>
+      <width>52</width>
+      <height>15</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #c3d1f9;</string>
+    </property>
+    <property name="text">
+     <string>Mods</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_server_country">
+    <property name="geometry">
+     <rect>
+      <x>1280</x>
+      <y>660</y>
+      <width>201</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #747db0;</string>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
     </property>
    </widget>
   </widget>
