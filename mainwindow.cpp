@@ -156,15 +156,11 @@ void MainWindow::fetchServers()
                     // Extract server details
                     QString serverName = serverObject.value("attributes").toObject().value("name").toString();
                     QString serverMap = serverDetails.value("map").toString();
-                    QString serverCountry = serverObject.value("attributes").toObject().value("country").toString();
+                    QString serverCountry = serverObject.value("attributes").toObject().value("country").toString().toLower();
                     QString serverIP = serverObject.value("attributes").toObject().value("ip").toString();
-                    int serverPort = serverObject.value("attributes").toObject().value("port").toInt();
                     int players = serverObject.value("attributes").toObject().value("players").toInt();
                     int maxPlayers = serverObject.value("attributes").toObject().value("maxPlayers").toInt();
-                    int port = serverObject.value("attributes").toObject().value("port").toInt();
                     int portQuery = serverObject.value("attributes").toObject().value("portQuery").toInt();
-
-                    // QString serverPing = getPing(serverIP);
 
                     // Add a new row to the table
                     ui->serverListTable->insertRow(row);
@@ -173,10 +169,22 @@ void MainWindow::fetchServers()
                     ui->serverListTable->setItem(row, 0, new QTableWidgetItem(serverName));
                     ui->serverListTable->setItem(row, 1, new QTableWidgetItem(serverMap));
                     ui->serverListTable->setItem(row, 2, new QTableWidgetItem(QString("%1/%2").arg(players).arg(maxPlayers)));
-                    ui->serverListTable->setItem(row, 3, new QTableWidgetItem(serverCountry));
                     ui->serverListTable->setItem(row, 4, new QTableWidgetItem(serverIP));
                     ui->serverListTable->setItem(row, 5, new QTableWidgetItem(QString::number(portQuery)));
-                    // ui->serverListTable->setItem(row, 6, new QTableWidgetItem(getPing(serverIP)));
+
+                    // Render flag in the "Country" column
+                    QLabel *flagLabel = new QLabel();
+                    QString flagPath = QString(":/resources/flags/%1.svg").arg(serverCountry);
+                    QPixmap flagPixmap(flagPath);
+
+                    if (!flagPixmap.isNull()) {
+                        flagLabel->setPixmap(flagPixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+                    } else {
+                        qWarning() << "Flag not found for country:" << serverCountry;
+                        flagLabel->setText(serverCountry); // Fallback: Show country name
+                    }
+
+                    ui->serverListTable->setCellWidget(row, 3, flagLabel);
 
                     row++;
                 }
