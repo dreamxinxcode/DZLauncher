@@ -284,12 +284,21 @@ void MainWindow::onRowClicked(int row, int column)
 void MainWindow::onRowDoubleClicked(int row, int column) {
     Q_UNUSED(column); // Ignore column if not needed
 
-    QStringList rowData;
-    for (int col = 0; col < ui->serverListTable->columnCount(); ++col) {
-        QTableWidgetItem *item = ui->serverListTable->item(row, col);
-        if (item) {
-            rowData << item->text();
-        }
-    }
-    qDebug() << "Row double-clicked:" << row << ", Data:" << rowData.join(", ");
+    // Extract server IP and port from the table
+    QTableWidgetItem *ipItem = ui->serverListTable->item(row, 4); // Assuming column 4 is the IP
+    QTableWidgetItem *portItem = ui->serverListTable->item(row, 5); // Assuming column 5 is the port
+
+    QString serverIP = ipItem->text();
+    QString serverPort = portItem->text();
+
+    // Construct the join command
+    QString joinCommand = QString("steam steam://connect/%1:%2").arg(serverIP, serverPort);
+
+    qDebug() << "Joining server with command:" << joinCommand;
+
+    // Execute the command using QProcess
+    QProcess *process = new QProcess(this);
+    process->start(joinCommand);
+
 }
+
