@@ -29,7 +29,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    // Connect double-click signal for rows
     connect(ui->serverListTable, &QTableWidget::cellClicked, this, &MainWindow::onRowClicked);
+    connect(ui->serverListTable, &QTableWidget::cellDoubleClicked,
+            this, &MainWindow::onRowDoubleClicked);
 
     this->setFixedSize(1500, 1000);
 
@@ -276,4 +279,17 @@ void MainWindow::onRowClicked(int row, int column)
     ui->label_server_country->setText(serverCountry);
     ui->label_server_port->setText(serverPort);
     ui->label_server_ip->setText(serverIP);
+}
+
+void MainWindow::onRowDoubleClicked(int row, int column) {
+    Q_UNUSED(column); // Ignore column if not needed
+
+    QStringList rowData;
+    for (int col = 0; col < ui->serverListTable->columnCount(); ++col) {
+        QTableWidgetItem *item = ui->serverListTable->item(row, col);
+        if (item) {
+            rowData << item->text();
+        }
+    }
+    qDebug() << "Row double-clicked:" << row << ", Data:" << rowData.join(", ");
 }
