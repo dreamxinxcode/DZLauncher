@@ -29,6 +29,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    fetchServers();
+
     // Connect double-click signal for rows
     connect(ui->serverListTable, &QTableWidget::cellClicked, this, &MainWindow::onRowClicked);
     connect(ui->serverListTable, &QTableWidget::cellDoubleClicked,
@@ -47,7 +49,7 @@ MainWindow::~MainWindow()
 QString MainWindow::getConfig(const QString &key)
 {
     // Relative path to the project root
-    QString filePath = QDir::currentPath() + "/../../config.json";
+    QString filePath = QDir::currentPath() + "/config.json";
     qDebug() << "Looking for config file at:" << filePath;
 
     QFile file(filePath);
@@ -107,14 +109,17 @@ QString getPing(const QString &serverAddress) {
 void MainWindow::fetchServers()
 {
     QString battlemetricsKey = getConfig("battlemetrics_token");
+    qDebug() << "[fetchServers] Using config path: " << QDir::currentPath() + "/../../config.json";
+    qDebug() << "[fetchServers] BattleMetrics token: " << (battlemetricsKey.isEmpty() ? "(empty)" : "(hidden)");
 
     if (battlemetricsKey.isEmpty()) {
-        qWarning() << "BattleMetrics token is missing in the config.";
+        qWarning() << "[fetchServers] BattleMetrics token is missing in the config.";
         return;
     }
 
     auto manager = new QNetworkAccessManager(this); // Manager tied to this MainWindow
     QUrl url("https://api.battlemetrics.com/servers");
+    qDebug() << "[fetchServers] Requesting URL:" << url.toString();
 
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -124,17 +129,17 @@ void MainWindow::fetchServers()
 
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         QByteArray response = reply->readAll();
+        qDebug() << "[fetchServers] HTTP response:" << response.left(500); // log first 500 bytes
         reply->deleteLater(); // Clean up the reply object
 
         QJsonDocument jsonDoc = QJsonDocument::fromJson(response);
         if (jsonDoc.isNull() || !jsonDoc.isObject()) {
-            qWarning() << "Invalid JSON format.";
+            qWarning() << "[fetchServers] Invalid JSON format.";
             return;
         }
 
         QJsonArray serversArray = jsonDoc.object().value("data").toArray();
-
-        qDebug() << "Number of servers:" << serversArray.size();
+        qDebug() << "[fetchServers] Number of servers in response:" << serversArray.size();
 
         // Store the server list in the member variable
         serverList = serversArray;
@@ -146,8 +151,7 @@ void MainWindow::fetchServers()
 
 void MainWindow::populateTable()
 {
-    fetchServers();
-
+    qDebug() << "[populateTable] Populating table with" << serverList.size() << "servers.";
     ui->serverListTable->setRowCount(0); // Clear existing rows
 
     for (int i = 0; i < serverList.size(); ++i) {
