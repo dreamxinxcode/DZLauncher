@@ -85,11 +85,11 @@ void MainWindow::checkConfig()
 QString getPing(const QString &serverAddress) {
     QProcess process;
 
-    #ifdef Q_OS_WIN
-        process.start("ping", QStringList() << "-n" << "1" << serverAddress);
-    #else
-        process.start("ping", QStringList() << "-c" << "1" << serverAddress);
-    #endif
+#ifdef Q_OS_WIN
+    process.start("ping", QStringList() << "-n" << "1" << serverAddress);
+#else
+    process.start("ping", QStringList() << "-c" << "1" << serverAddress);
+#endif
 
     if (!process.waitForFinished(5000)) {
         return "Timeout";
@@ -106,7 +106,6 @@ QString getPing(const QString &serverAddress) {
 
 void MainWindow::fetchServers()
 {
-    // Get the token
     QString battlemetricsKey = getConfig("battlemetrics_token");
 
     if (battlemetricsKey.isEmpty()) {
@@ -114,156 +113,121 @@ void MainWindow::fetchServers()
         return;
     }
 
-    // Create the network manager
-    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
-
-    // API URL
+    auto manager = new QNetworkAccessManager(this); // Manager tied to this MainWindow
     QUrl url("https://api.battlemetrics.com/servers");
 
-    // Create the request
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
     request.setRawHeader("Authorization", QString("Bearer %1").arg(battlemetricsKey).toUtf8());
 
-    // Send GET request
     QNetworkReply *reply = manager->get(request);
 
-    // Handle the response asynchronously
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
-        if (reply->error() == QNetworkReply::NoError) {
-            // Read the response
-            QByteArray response = reply->readAll();
+        QByteArray response = reply->readAll();
+        reply->deleteLater(); // Clean up the reply object
 
-            // Parse JSON
-            QJsonDocument jsonDoc = QJsonDocument::fromJson(response);
-            if (!jsonDoc.isNull()) {
-                QJsonObject jsonObj = jsonDoc.object();
-
-                // Access the "data" array
-                QJsonArray serversArray = jsonObj.value("data").toArray();
-                if (serversArray.isEmpty()) {
-                    qWarning() << "No servers found in the response!";
-                    return;
-                }
-
-                // Clear the table
-                ui->serverListTable->setRowCount(0);
-
-                // Iterate over the servers and add to the table
-                int row = 0;
-                for (const QJsonValue &serverValue : serversArray) {
-                    if (!serverValue.isObject()) continue;
-
-                    QJsonObject serverObject = serverValue.toObject();
-                    QJsonObject serverDetails = serverObject.value("attributes").toObject().value("details").toObject();
-
-                    // Extract server details
-                    QString serverName = serverObject.value("attributes").toObject().value("name").toString();
-                    QString serverMap = serverDetails.value("map").toString();
-                    QString serverCountry = serverObject.value("attributes").toObject().value("country").toString().toLower();
-                    QString serverIP = serverObject.value("attributes").toObject().value("ip").toString();
-                    int players = serverObject.value("attributes").toObject().value("players").toInt();
-                    int maxPlayers = serverObject.value("attributes").toObject().value("maxPlayers").toInt();
-                    int portQuery = serverObject.value("attributes").toObject().value("portQuery").toInt();
-
-                    // Add a new row to the table
-                    ui->serverListTable->insertRow(row);
-
-                    // Populate the table
-                    ui->serverListTable->setItem(row, 0, new QTableWidgetItem(serverName));
-                    ui->serverListTable->setItem(row, 1, new QTableWidgetItem(serverMap));
-                    ui->serverListTable->setItem(row, 2, new QTableWidgetItem(QString("%1/%2").arg(players).arg(maxPlayers)));
-                    ui->serverListTable->setItem(row, 4, new QTableWidgetItem(serverIP));
-                    ui->serverListTable->setItem(row, 5, new QTableWidgetItem(QString::number(portQuery)));
-
-                    // Render flag in the "Country" column
-                    QLabel *flagLabel = new QLabel();
-                    QString flagPath = QString(":/resources/flags/%1.svg").arg(serverCountry);
-                    QPixmap flagPixmap(flagPath);
-
-                    if (!flagPixmap.isNull()) {
-                        flagLabel->setPixmap(flagPixmap.scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-                    } else {
-                        qWarning() << "Flag not found for country:" << serverCountry;
-                        flagLabel->setText(serverCountry); // Fallback: Show country name
-                    }
-
-                    ui->serverListTable->setCellWidget(row, 3, flagLabel);
-
-                    row++;
-                }
-            }
-        } else {
-            // Handle errors
-            qDebug() << "API Error: " << reply->errorString();
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(response);
+        if (jsonDoc.isNull() || !jsonDoc.isObject()) {
+            qWarning() << "Invalid JSON format.";
+            return;
         }
 
-        reply->deleteLater(); // Clean up
+        QJsonArray serversArray = jsonDoc.object().value("data").toArray();
+
+        qDebug() << "Number of servers:" << serversArray.size();
+
+        // Store the server list in the member variable
+        serverList = serversArray;
+
+        // Populate the table with the fetched servers
+        populateTable();
     });
+}
+
+void MainWindow::populateTable()
+{
+    fetchServers();
+
+    ui->serverListTable->setRowCount(0); // Clear existing rows
+
+    for (int i = 0; i < serverList.size(); ++i) {
+        QJsonValue value = serverList.at(i);
+        if (!value.isObject()) continue;
+
+        QJsonObject serverObject = value.toObject();
+        QJsonObject attributes = serverObject.value("attributes").toObject();
+
+        QString serverName = attributes.value("name").toString("Unknown Name");
+        QString serverMap = attributes.value("details").toObject().value("map").toString("Unknown Map");
+        QString serverPlayers = QString("%1/%2")
+                                    .arg(attributes.value("players").toInt())
+                                    .arg(attributes.value("maxPlayers").toInt());
+        QString serverCountry = attributes.value("country").toString("Unknown Country");
+        QString serverIP = attributes.value("ip").toString("0.0.0.0");
+        QString serverPort = QString::number(attributes.value("port").toInt());
+        QString ping = "N/A"; // Optional: Add logic to calculate ping if needed
+
+        int row = ui->serverListTable->rowCount();
+        ui->serverListTable->insertRow(row);
+
+        ui->serverListTable->setItem(row, 0, new QTableWidgetItem(serverName));
+        ui->serverListTable->setItem(row, 1, new QTableWidgetItem(serverMap));
+        ui->serverListTable->setItem(row, 2, new QTableWidgetItem(serverPlayers));
+        ui->serverListTable->setItem(row, 3, new QTableWidgetItem(serverCountry));
+        ui->serverListTable->setItem(row, 4, new QTableWidgetItem(serverIP));
+        ui->serverListTable->setItem(row, 5, new QTableWidgetItem(serverPort));
+        ui->serverListTable->setItem(row, 6, new QTableWidgetItem(ping));
+    }
 }
 
 void MainWindow::setupTable()
 {
-    fetchServers();
-
-    ui->serverListTable->setColumnCount(7);
-
-    // Set column headers
-    QStringList headers;
-    headers << "Name" << "Map" << "Players" << "Country" << "IP" << "Port" << "Ping";
+    ui->serverListTable->clear(); // Clear headers and contents
+    QStringList headers{"Name", "Map", "Players", "Country", "IP", "Port", "Ping"};
+    ui->serverListTable->setColumnCount(headers.size());
     ui->serverListTable->setHorizontalHeaderLabels(headers);
+
     ui->serverListTable->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
     ui->serverListTable->setSortingEnabled(true);
     ui->serverListTable->setShowGrid(false);
     ui->serverListTable->horizontalHeader()->setVisible(true);
 
     // Adjust individual column widths
-    ui->serverListTable->setColumnWidth(0, 350); // Name: Largest column, as it typically holds the most text
-    ui->serverListTable->setColumnWidth(1, 200); // Map: Moderate width for map names
-    ui->serverListTable->setColumnWidth(2, 100); // Players: Smaller width for player counts
-    ui->serverListTable->setColumnWidth(3, 150); // Country: Moderate width for country names
-    ui->serverListTable->setColumnWidth(4, 200); // IP: Moderate width for IP addresses
-    ui->serverListTable->setColumnWidth(5, 100); // Port: Small width for port numbers
-    ui->serverListTable->setColumnWidth(6, 50); // Ping: Small width for ping times
+    ui->serverListTable->setColumnWidth(0, 350);
+    ui->serverListTable->setColumnWidth(1, 200);
+    ui->serverListTable->setColumnWidth(2, 100);
+    ui->serverListTable->setColumnWidth(3, 150);
+    ui->serverListTable->setColumnWidth(4, 200);
+    ui->serverListTable->setColumnWidth(5, 100);
+    ui->serverListTable->setColumnWidth(6, 50);
 
-    // Ensure columns stretch to fill any remaining space
+    // Ensure columns stretch to fill remaining space
     ui->serverListTable->horizontalHeader()->setStretchLastSection(true);
+
+    // Populate data
+    populateTable();
 }
 
 void MainWindow::onRowClicked(int row, int column)
 {
-    Q_UNUSED(column); // Ignore the column for this use case
+    Q_UNUSED(column);
 
-    QColor highlightColor("#318fca"); // Yellow (hex)
-    QColor defaultColor("#22243a");   // White (hex)
-
-    // Highlight the clicked row
-    for (int i = 0; i < ui->serverListTable->rowCount(); ++i) {
-        if (i == row) {
-            for (int j = 0; j < ui->serverListTable->columnCount(); ++j) {
-                QTableWidgetItem *item = ui->serverListTable->item(i, j);
-                if (item) {
-                    item->setBackground(highlightColor); // Highlight the row
-                }
-            }
-        } else {
-            for (int j = 0; j < ui->serverListTable->columnCount(); ++j) {
-                QTableWidgetItem *item = ui->serverListTable->item(i, j);
-                if (item) {
-                    item->setBackground(defaultColor); // Reset the background color
-                }
-            }
-        }
+    if (row < 0 || row >= serverList.size()) {
+        qDebug() << "Invalid row index";
+        return;
     }
 
-    // Print the server details to the console
-    QString serverName = ui->serverListTable->item(row, 0)->text();
-    QString serverMap = ui->serverListTable->item(row, 1)->text();
-    QString serverPlayers = ui->serverListTable->item(row, 2)->text();
-    QString serverCountry = static_cast<QLabel*>(ui->serverListTable->cellWidget(row, 3))->text();
-    QString serverIP = ui->serverListTable->item(row, 4)->text();
-    QString serverPort = ui->serverListTable->item(row, 5)->text();
+    QJsonObject serverObject = serverList.at(row).toObject();
+    QJsonObject attributes = serverObject.value("attributes").toObject();
+
+    QString serverName = attributes.value("name").toString("Unknown Name");
+    QString serverMap = attributes.value("details").toObject().value("map").toString("Unknown Map");
+    QString serverPlayers = QString("%1/%2")
+                                .arg(attributes.value("players").toInt())
+                                .arg(attributes.value("maxPlayers").toInt());
+    QString serverCountry = attributes.value("country").toString("Unknown Country");
+    QString serverIP = attributes.value("ip").toString("0.0.0.0");
+    QString serverPort = QString::number(attributes.value("port").toInt());
 
     qDebug() << "Server Details:"
              << "\nName: " << serverName
@@ -273,6 +237,7 @@ void MainWindow::onRowClicked(int row, int column)
              << "\nIP: " << serverIP
              << "\nPort: " << serverPort;
 
+    // Update UI labels with the details
     ui->label_server_name->setText(serverName);
     ui->label_server_map->setText(serverMap);
     ui->label_server_players->setText(serverPlayers);
@@ -281,24 +246,33 @@ void MainWindow::onRowClicked(int row, int column)
     ui->label_server_ip->setText(serverIP);
 }
 
-void MainWindow::onRowDoubleClicked(int row, int column) {
-    Q_UNUSED(column); // Ignore column if not needed
+void MainWindow::onRowDoubleClicked(int row, int column)
+{
+    Q_UNUSED(column);
 
-    // Extract server IP and port from the table
-    QTableWidgetItem *ipItem = ui->serverListTable->item(row, 4); // Assuming column 4 is the IP
-    QTableWidgetItem *portItem = ui->serverListTable->item(row, 5); // Assuming column 5 is the port
+    if (row < 0 || row >= ui->serverListTable->rowCount()) {
+        qWarning() << "Invalid row index for double-click.";
+        return;
+    }
+
+    QTableWidgetItem *ipItem = ui->serverListTable->item(row, 4);
+    QTableWidgetItem *portItem = ui->serverListTable->item(row, 5);
+
+    if (!ipItem || !portItem) {
+        qDebug() << "Invalid IP or Port item";
+        return;
+    }
 
     QString serverIP = ipItem->text();
     QString serverPort = portItem->text();
-
-    // Construct the join command
     QString joinCommand = QString("steam steam://connect/%1:%2").arg(serverIP, serverPort);
 
     qDebug() << "Joining server with command:" << joinCommand;
 
-    // Execute the command using QProcess
     QProcess *process = new QProcess(this);
     process->start(joinCommand);
 
+    if (!process->waitForStarted()) {
+        qWarning() << "Failed to start Steam process for joining server.";
+    }
 }
-

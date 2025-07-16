@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QJsonArray>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -21,10 +22,12 @@ private:
     Ui::MainWindow *ui;
 
     void setupTable();
+    void populateTable();
     void onRowClicked(int row, int column);
     void onRowDoubleClicked(int row, int column);
     QString getConfig(const QString &key);
     void checkConfig();
     void fetchServers();
+    QJsonArray serverList;
 };
 #endif // MAINWINDOW_H
