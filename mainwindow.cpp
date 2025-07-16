@@ -215,6 +215,10 @@ void MainWindow::setupTable()
     ui->serverListTable->setSortingEnabled(true);
     ui->serverListTable->setShowGrid(false);
     ui->serverListTable->horizontalHeader()->setVisible(true);
+    
+    // Set selection behavior to select entire rows
+    ui->serverListTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->serverListTable->setSelectionMode(QAbstractItemView::SingleSelection);
 
     // Adjust individual column widths
     ui->serverListTable->setColumnWidth(0, 350);

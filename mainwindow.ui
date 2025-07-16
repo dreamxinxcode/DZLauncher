@@ -14,16 +14,55 @@
    <string>DZLauncher</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: #22243a;
+   <string notr="true">QMainWindow {
+    background-color: #232323;
+    color: #f3f3f3;
+}
+
+QWidget {
+    background-color: #232323;
+    color: #f3f3f3;
+}
+
+QLabel {
+    background-color: transparent;
+    color: #f3f3f3;
+}
+
+QLineEdit {
+    background-color: #2d2d2d;
+    color: #f3f3f3;
+    border: 1px solid #444444;
+    padding: 5px;
+}
+
+QPushButton {
+    background-color: #2d2d2d;
+    color: #f3f3f3;
+    border: 1px solid #444444;
+    padding: 5px;
+}
+
+QPushButton:hover {
+    background-color: #3d3d3d;
+}
+
+QPushButton:pressed {
+    background-color: #1d1d1d;
+}
+
+QCheckBox {
+    color: #f3f3f3;
+}
 
 QCheckBox::indicator:checked {
-    background-color: transparent; /* Keep background transparent */
-    border: 2px solid green;       /* Border color for the check mark */
-    color: green;                 /* Color of the checkmark */
+    background-color: transparent;
+    border: 2px solid green;
+    color: green;
 }
 
 QCheckBox::indicator:unchecked {
-    border: 2px solid gray;       /* Border color for the unchecked state */
+    border: 2px solid gray;
 }</string>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -38,7 +77,8 @@ QCheckBox::indicator:unchecked {
     </property>
     <property name="styleSheet">
      <string notr="true">QTableWidget {
-	color: #747db0;
+	color: #ffffff;
+	background-color: #2d2d2d;
 }
 </string>
     </property>
@@ -56,6 +96,9 @@ QCheckBox::indicator:unchecked {
     </property>
     <property name="wordWrap">
      <bool>false</bool>
+    </property>
+    <property name="selectionBehavior">
+     <enum>QAbstractItemView::SelectRows</enum>
     </property>
     <property name="rowCount">
      <number>100</number>
@@ -200,16 +243,16 @@ QCheckBox::indicator:unchecked {
     </property>
     <property name="styleSheet">
      <string notr="true">QLineEdit {
- color: #00c2f8;
- background-color: #1e2032;
- border: 2px solid gray;
+ color: #f3f3f3;
+ background-color: #2d2d2d;
+ border: 2px solid #444444;
 padding: 0 8px;
-selection-background-color: darkgray;
+selection-background-color: #444444;
  font-size: 16px;
 }
 
 QLineEdit:focus { 
-	background-color: #1e2032;
+	background-color: #2d2d2d;
 }</string>
     </property>
     <property name="inputMask">
@@ -229,7 +272,7 @@ QLineEdit:focus {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color: #1e2032; color: #c5d3fb;</string>
+     <string notr="true">background-color: #2d2d2d; color: #f3f3f3;</string>
     </property>
     <property name="text">
      <string>Reset</string>
@@ -245,7 +288,7 @@ QLineEdit:focus {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #c3d1f9;</string>
+     <string notr="true">color: #f3f3f3;</string>
     </property>
     <property name="text">
      <string>Online</string>
@@ -264,7 +307,7 @@ QLineEdit:focus {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #c3d1f9;
+     <string notr="true">color: #f3f3f3;
 </string>
     </property>
     <property name="text">
@@ -303,7 +346,7 @@ QLineEdit:focus {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #c3d1f9;</string>
+     <string notr="true">color: #f3f3f3;</string>
     </property>
     <property name="text">
      <string>1PP</string>
@@ -319,7 +362,7 @@ QLineEdit:focus {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #c3d1f9;</string>
+     <string notr="true">color: #f3f3f3;</string>
     </property>
     <property name="text">
      <string>3PP</string>
@@ -335,7 +378,7 @@ QLineEdit:focus {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #c3d1f9;</string>
+     <string notr="true">color: #f3f3f3;</string>
     </property>
     <property name="text">
      <string>Day</string>
@@ -351,7 +394,7 @@ QLineEdit:focus {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #c3d1f9;</string>
+     <string notr="true">color: #f3f3f3;</string>
     </property>
     <property name="text">
      <string>Night</string>
@@ -367,7 +410,7 @@ QLineEdit:focus {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #747db0;</string>
+     <string notr="true">color: #f3f3f3;</string>
     </property>
     <property name="text">
      <string/>
@@ -383,7 +426,7 @@ QLineEdit:focus {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #747db0;</string>
+     <string notr="true">color: #f3f3f3;</string>
     </property>
     <property name="text">
      <string>TextLabel</string>
@@ -399,7 +442,7 @@ QLineEdit:focus {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #747db0;</string>
+     <string notr="true">color: #f3f3f3;</string>
     </property>
     <property name="text">
      <string>TextLabel</string>
@@ -415,7 +458,7 @@ QLineEdit:focus {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #747db0;</string>
+     <string notr="true">color: #f3f3f3;</string>
     </property>
     <property name="text">
      <string>TextLabel</string>
@@ -431,7 +474,7 @@ QLineEdit:focus {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #747db0;</string>
+     <string notr="true">color: #f3f3f3;</string>
     </property>
     <property name="text">
      <string>TextLabel</string>
@@ -447,7 +490,7 @@ QLineEdit:focus {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #747db0;</string>
+     <string notr="true">color: #f3f3f3;</string>
     </property>
     <property name="text">
      <string>TextLabel</string>
@@ -464,8 +507,8 @@ QLineEdit:focus {
     </property>
     <property name="styleSheet">
      <string notr="true">QTextBrowser {
-	color: #c3d1f9;
-	border-color: #c3d1f9;
+	color: #f3f3f3;
+	border-color: #f3f3f3;
 }</string>
     </property>
    </widget>
@@ -479,7 +522,7 @@ QLineEdit:focus {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #c3d1f9;</string>
+     <string notr="true">color: #f3f3f3;</string>
     </property>
     <property name="text">
      <string>Mods</string>
@@ -495,7 +538,7 @@ QLineEdit:focus {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">color: #747db0;</string>
+     <string notr="true">color: #f3f3f3;</string>
     </property>
     <property name="text">
      <string>TextLabel</string>
