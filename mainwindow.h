@@ -29,5 +29,10 @@ private:
     void checkConfig();
     void fetchServers();
     QJsonArray serverList;
+    int serverPageOffset = 0;
+    int serverPageSize = 100;
+    bool isFetchingServers = false;
+    bool hasMoreServers = true;
+    void fetchNextServers();
 };
 #endif // MAINWINDOW_H

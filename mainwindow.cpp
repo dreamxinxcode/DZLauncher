@@ -22,6 +22,8 @@
 #include <QPixmap>
 #include <QProcess>
 #include <QElapsedTimer>
+#include <QScrollBar> // Added for infinite scroll
+#include <QUrlQuery> // Added for pagination
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -35,6 +37,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->serverListTable, &QTableWidget::cellClicked, this, &MainWindow::onRowClicked);
     connect(ui->serverListTable, &QTableWidget::cellDoubleClicked,
             this, &MainWindow::onRowDoubleClicked);
+
+    // Infinite scroll: fetch more when scrolled to bottom
+    connect(ui->serverListTable->verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int value) {
+        if (value == ui->serverListTable->verticalScrollBar()->maximum()) {
+            fetchNextServers();
+        }
+    });
 
     this->setFixedSize(1500, 1000);
 
@@ -108,43 +117,54 @@ QString getPing(const QString &serverAddress) {
 
 void MainWindow::fetchServers()
 {
-    QString battlemetricsKey = getConfig("battlemetrics_token");
-    qDebug() << "[fetchServers] Using config path: " << QDir::currentPath() + "/../../config.json";
-    qDebug() << "[fetchServers] BattleMetrics token: " << (battlemetricsKey.isEmpty() ? "(empty)" : "(hidden)");
+    serverList = QJsonArray();
+    serverPageOffset = 0;
+    hasMoreServers = true;
+    fetchNextServers();
+}
 
+void MainWindow::fetchNextServers()
+{
+    if (isFetchingServers || !hasMoreServers) return;
+    isFetchingServers = true;
+    QString battlemetricsKey = getConfig("battlemetrics_token");
     if (battlemetricsKey.isEmpty()) {
         qWarning() << "[fetchServers] BattleMetrics token is missing in the config.";
+        isFetchingServers = false;
         return;
     }
-
-    auto manager = new QNetworkAccessManager(this); // Manager tied to this MainWindow
+    auto manager = new QNetworkAccessManager(this);
     QUrl url("https://api.battlemetrics.com/servers");
+    QUrlQuery query;
+    query.addQueryItem("filter[game]", "dayz");
+    query.addQueryItem("page[size]", QString::number(serverPageSize));
+    query.addQueryItem("page[offset]", QString::number(serverPageOffset));
+    url.setQuery(query);
     qDebug() << "[fetchServers] Requesting URL:" << url.toString();
-
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     request.setRawHeader("Authorization", QString("Bearer %1").arg(battlemetricsKey).toUtf8());
-
     QNetworkReply *reply = manager->get(request);
-
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         QByteArray response = reply->readAll();
-        qDebug() << "[fetchServers] HTTP response:" << response.left(500); // log first 500 bytes
-        reply->deleteLater(); // Clean up the reply object
-
+        qDebug() << "[fetchServers] HTTP response:" << response.left(500);
+        reply->deleteLater();
+        isFetchingServers = false;
         QJsonDocument jsonDoc = QJsonDocument::fromJson(response);
         if (jsonDoc.isNull() || !jsonDoc.isObject()) {
             qWarning() << "[fetchServers] Invalid JSON format.";
             return;
         }
-
         QJsonArray serversArray = jsonDoc.object().value("data").toArray();
         qDebug() << "[fetchServers] Number of servers in response:" << serversArray.size();
-
-        // Store the server list in the member variable
-        serverList = serversArray;
-
-        // Populate the table with the fetched servers
+        for (const QJsonValue &val : serversArray) {
+            serverList.append(val);
+        }
+        if (serversArray.size() < serverPageSize) {
+            hasMoreServers = false;
+        } else {
+            serverPageOffset += serverPageSize;
+        }
         populateTable();
     });
 }
